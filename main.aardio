@@ -1,0 +1,67 @@
+import win.ui;
+import crypt.aes;
+import crypt.bin;
+import crypt.hmac;
+import web.json;
+/*DSG{{*/
+var winform = win.form(text="互联互通协议加解密工具";right=759;bottom=469)
+winform.add(
+OperatorId={cls="edit";left=13;top=50;right=169;bottom=70;edge=1;z=6};
+Seq={cls="edit";left=13;top=100;right=168;bottom=120;edge=1;z=7};
+SigSecert={cls="edit";left=13;top=250;right=169;bottom=270;edge=1;z=10};
+dataSecert={cls="edit";left=13;top=150;right=169;bottom=170;edge=1;z=8};
+dataSecertIV={cls="edit";left=13;top=200;right=169;bottom=220;edge=1;z=9};
+decodeBtn={cls="button";text="decode";left=11;top=375;right=167;bottom=425;z=12};
+decodeStr={cls="edit";left=475;top=30;right=725;bottom=425;ah=1;autohscroll=false;aw=1;edge=1;multiline=1;z=14};
+encodeBtn={cls="button";text="encode";left=11;top=300;right=167;bottom=350;z=11};
+encodeStr={cls="edit";left=200;top=30;right=450;bottom=425;ah=1;autohscroll=false;aw=1;edge=1;multiline=1;z=13};
+static={cls="static";text="OperatorId";left=13;top=27;right=81;bottom=45;notify=1;transparent=1;z=1};
+static2={cls="static";text="Seq";left=13;top=77;right=81;bottom=95;notify=1;transparent=1;z=2};
+static3={cls="static";text="dataSecert";left=13;top=127;right=81;bottom=145;notify=1;transparent=1;z=4};
+static4={cls="static";text="dataSecertIV";left=13;top=177;right=81;bottom=195;notify=1;transparent=1;z=3};
+static5={cls="static";text="SigSecert";left=13;top=227;right=81;bottom=245;notify=1;transparent=1;z=5}
+)
+/*}}*/
+
+winform.encodeBtn.oncommand = function(id,event){
+
+	try{
+     	var aes = crypt.aes();
+		aes.setPassword(winform.dataSecert.text);
+		aes.setKeyParamMode(1/*_CRYPT_MODE_CBC*/);
+		aes.setKeyParamPadding(1/*_PKCS5_PADDING*/);
+		aes.setInitVector(winform.dataSecertIV.text);
+		var OperatorID = winform.OperatorId.text
+		var Seq = winform.Seq.text
+		var SigSecert = winform.SigSecert.text
+		var timestamp = tostring(time(,"%Y%m%d%H%M%S"));
+		var data = crypt.bin.encodeBase64(aes.encrypt(winform.encodeStr.text));
+		var sigText = OperatorID + data + timestamp + Seq;
+		var sig = crypt.hmac.md5(SigSecert,sigText).getValue();
+		var sigRst = string.upper(string.replace(crypt.bin.encodeHex(sig)," ",""));
+		winform.decodeStr.text = web.json.stringify({
+			OperatorID: OperatorID,
+			Data: data,
+			TimeStamp: timestamp,
+			Seq: Seq,
+			Sig: sigRst
+		})
+		
+	}
+	catch(e){
+    	winform.decodeStr.text = e
+	}
+}
+
+winform.decodeBtn.oncommand = function(id,event){
+	var aes = crypt.aes();
+	aes.setPassword(winform.dataSecert.text);
+	aes.setKeyParamMode(1/*_CRYPT_MODE_CBC*/);
+	aes.setKeyParamPadding(1/*_PKCS5_PADDING*/);
+	aes.setInitVector(winform.dataSecertIV.text);
+	var json = web.json.parse(winform.decodeStr.text)
+	winform.encodeStr.text = aes.decrypt(crypt.bin.decodeBase64(json.Data))
+}
+
+winform.show();
+win.loopMessage();
