@@ -11,15 +11,17 @@ Seq={cls="edit";left=13;top=100;right=168;bottom=120;edge=1;z=7};
 SigSecert={cls="edit";left=13;top=250;right=169;bottom=270;edge=1;z=10};
 dataSecert={cls="edit";left=13;top=150;right=169;bottom=170;edge=1;z=8};
 dataSecertIV={cls="edit";left=13;top=200;right=169;bottom=220;edge=1;z=9};
-decodeBtn={cls="button";text="decode";left=11;top=375;right=167;bottom=425;z=12};
+decodeBtn={cls="button";text="decode";left=11;top=385;right=167;bottom=425;z=12};
 decodeStr={cls="edit";left=475;top=30;right=725;bottom=425;ah=1;autohscroll=false;aw=1;edge=1;multiline=1;z=14};
-encodeBtn={cls="button";text="encode";left=11;top=300;right=167;bottom=350;z=11};
+encodeBtn={cls="button";text="encode";left=11;top=335;right=167;bottom=375;z=11};
 encodeStr={cls="edit";left=200;top=30;right=450;bottom=425;ah=1;autohscroll=false;aw=1;edge=1;multiline=1;z=13};
 static={cls="static";text="OperatorId";left=13;top=27;right=81;bottom=45;notify=1;transparent=1;z=1};
 static2={cls="static";text="Seq";left=13;top=77;right=81;bottom=95;notify=1;transparent=1;z=2};
-static3={cls="static";text="dataSecert";left=13;top=127;right=81;bottom=145;notify=1;transparent=1;z=4};
-static4={cls="static";text="dataSecertIV";left=13;top=177;right=81;bottom=195;notify=1;transparent=1;z=3};
-static5={cls="static";text="SigSecert";left=13;top=227;right=81;bottom=245;notify=1;transparent=1;z=5}
+static3={cls="static";text="dataSecret";left=13;top=127;right=81;bottom=145;notify=1;transparent=1;z=4};
+static4={cls="static";text="dataSecretIV";left=13;top=177;right=81;bottom=195;notify=1;transparent=1;z=3};
+static5={cls="static";text="SigSecret";left=13;top=227;right=81;bottom=245;notify=1;transparent=1;z=5};
+static6={cls="static";text="timestamp(不填为当前时间)";left=13;top=277;right=168;bottom=295;notify=1;transparent=1;z=15};
+timestamp={cls="edit";left=13;top=300;right=169;bottom=320;edge=1;z=16}
 )
 /*}}*/
 
@@ -34,7 +36,10 @@ winform.encodeBtn.oncommand = function(id,event){
 		var OperatorID = winform.OperatorId.text
 		var Seq = winform.Seq.text
 		var SigSecert = winform.SigSecert.text
-		var timestamp = tostring(time(,"%Y%m%d%H%M%S"));
+		var timestamp = winform.timestamp.text
+		if(timestamp == ''){
+			timestamp = tostring(time(,"%Y%m%d%H%M%S"));
+		}
 		var data = crypt.bin.encodeBase64(aes.encrypt(winform.encodeStr.text));
 		var sigText = OperatorID + data + timestamp + Seq;
 		var sig = crypt.hmac.md5(SigSecert,sigText).getValue();
